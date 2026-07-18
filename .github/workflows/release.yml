@@ -2,11 +2,8 @@ name: Build JDK 25 Package
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'JDK version (e.g. 25.0.2.1)'
-        required: true
-        type: string
+  schedule:
+    - cron: '0 6 * * 1'  # 每周一 06:00 UTC 自动运行
 
 jobs:
   build:
@@ -19,9 +16,18 @@ jobs:
           curl -fsSL https://cyp.cyteam.cc.cd/install.sh | bash
           echo "$HOME/.cyp/bin" >> $GITHUB_PATH
 
+      - name: Detect latest version
+        id: version
+        run: |
+          VERSION=$(curl -s "https://api.adoptium.net/v3/info/available_releases" | python3 -c "import sys,json; d=json.load(sys.stdin); releases=[r for r in d.get('available_releases',[]) if r==25]; print(releases[0] if releases else 25)")
+          # Get full version from API
+          FULL_VERSION=$(curl -s "https://api.adoptium.net/v3/assets/latest/25/hotspot?architecture=x64&image_type=jdk&os=linux&vendor=eclipse" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d[0]['version']['semver'])")
+          echo "version=$FULL_VERSION" >> $GITHUB_OUTPUT
+          echo "Latest JDK 25 version: $FULL_VERSION"
+
       - name: Update version in _CYPPACKAGE.TOML
         run: |
-          sed -i 's/^version = ".*"/version = "${{ inputs.version }}"/' _CYPPACKAGE.TOML
+          sed -i 's/^version = ".*"/version = "${{ steps.version.outputs.version }}"/' _CYPPACKAGE.TOML
 
       - name: Download JDK - macOS ARM64
         run: |
@@ -61,7 +67,8 @@ jobs:
           URL=$(curl -s "https://api.adoptium.net/v3/assets/latest/25/hotspot?architecture=x64&image_type=jdk&os=windows&vendor=eclipse" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d[0]['binary']['package']['link'])")
           curl -fsSL "$URL" -o jdk.zip
           unzip -q jdk.zip -d win64/_CYPASSETS_tmp
-          mv win64/_CYPASSETS_tmp/*/  win64/_CYPASSETS/ 2>/dev/null || true
+          # Move contents of the single subdirectory up
+          cd win64/_CYPASSETS_tmp && dir=$(ls -d */ | head -1) && mv "$dir"* ../_CYPASSETS/ && cd ../../.. && rm -rf win64/_CYPASSETS_tmp
           rm jdk.zip
 
       - name: Pack with cyp
@@ -71,7 +78,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.version }}
+          tag_name: ${{ steps.version.outputs.version }}
           files: "*.cyp"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
