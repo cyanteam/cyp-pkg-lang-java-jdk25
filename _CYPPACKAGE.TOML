@@ -1,0 +1,19 @@
+name = "jdk25"
+name_cn = "Java Development Kit 25"
+description = "Eclipse Temurin OpenJDK 25"
+author = "cyanteam"
+contact = "qtof@qq.com"
+version = "0.0.0"
+language = "java"
+architecture = "multi"
+package_id = "cc.cyteam.lang.java.jdk25"
+
+[config_command]
+common = "{install_path}/_CYPASSETS/bin/java"
+macosarm64 = "{install_path}/_CYPASSETS/bin/java"
+macosintel = "{install_path}/_CYPASSETS/bin/java"
+linux64 = "{install_path}/_CYPASSETS/bin/java"
+linuxarm64 = "{install_path}/_CYPASSETS/bin/java"
+win64 = "{install_path}/_CYPASSETS/bin/java.exe"
+
+[assets]

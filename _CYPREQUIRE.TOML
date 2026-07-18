@@ -1,0 +1,5 @@
+[[dependency]]
+name = "java"
+type = "runtime"
+check_command = "java -version 2>&1 | grep '25'"
+install_hint = "可通过 cyp install cc.cyteam.lang.java.jdk25 安装"
