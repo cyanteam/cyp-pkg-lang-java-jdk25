@@ -6,7 +6,7 @@ contact = "qtof@qq.com"
 version = "0.0.0"
 language = "java"
 architecture = "multi"
-package_id = "cc.cyteam.lang.java.jdk25"
+package_id = "lang.java.jdk25"
 
 [config_command]
 common = "{install_path}/_CYPASSETS/bin/java"
